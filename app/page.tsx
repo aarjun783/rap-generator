@@ -10,7 +10,10 @@ type Rap = {
   createdAt: number;
 };
 
+type FormType = "Rap" | "Poem" | "Short Story" | "Haiku";
+
 export default function HomePage() {
+  const [form, setForm] = useState<FormType>("Rap");
   const [language, setLanguage] = useState<string>("English");
   const [theme, setTheme] = useState<string>("Hustle and ambition");
   const [style, setStyle] = useState<string>("Old-school boom bap");
@@ -18,7 +21,7 @@ export default function HomePage() {
 
   const [instruction, setInstruction] = useState<string>("");
 
-  // Creative controls
+  // creative sliders
   const [flow, setFlow] = useState<number>(50);
   const [tempo, setTempo] = useState<number>(50);
   const [emotion, setEmotion] = useState<number>(50);
@@ -28,21 +31,22 @@ export default function HomePage() {
 
   function creativeSettingsText() {
     return `
+Form: ${form}
 Flow: ${flow < 40 ? "choppy" : flow > 60 ? "smooth" : "balanced"}
 Tempo: ${tempo < 40 ? "slow" : tempo > 60 ? "fast" : "medium"}
 Emotion: ${emotion < 40 ? "calm" : emotion > 60 ? "aggressive" : "neutral"}
 Complexity: ${
       complexity < 40
-        ? "simple rhymes"
+        ? "simple language"
         : complexity > 60
-        ? "lyrical multisyllabic rhymes"
+        ? "rich, layered language"
         : "medium complexity"
     }
 `;
   }
 
-  // Generate rap
-  async function generateRap(e: React.FormEvent) {
+  // Generate piece
+  async function generatePiece(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setLyric("");
@@ -50,7 +54,7 @@ Complexity: ${
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ language, theme, style }),
+      body: JSON.stringify({ language, theme, style, form }),
     });
 
     const data = await res.json();
@@ -59,13 +63,13 @@ Complexity: ${
   }
 
   // Save locally
-  function saveRap() {
-    if (!lyric) return alert("Generate a rap first!");
+  function savePiece() {
+    if (!lyric) return alert("Generate something first!");
 
     const title = prompt("Enter a title:");
     if (!title) return;
 
-    const newRap: Rap = {
+    const newItem: Rap = {
       id: crypto.randomUUID(),
       title,
       lyric,
@@ -74,15 +78,14 @@ Complexity: ${
     };
 
     const existing: Rap[] = JSON.parse(localStorage.getItem("raps") || "[]");
-    existing.push(newRap);
-
+    existing.push(newItem);
     localStorage.setItem("raps", JSON.stringify(existing));
 
-    alert("Rap saved!");
+    alert("Saved!");
   }
 
-  // Romanise
-  async function romaniseRap() {
+  // Romanise (still works generically)
+  async function romaniseText() {
     if (!lyric) return;
 
     const res = await fetch("/api/romanise", {
@@ -95,16 +98,16 @@ Complexity: ${
     if (data.romanised) setLyric(data.romanised);
   }
 
-  // Apply edit (creative + instruction)
+  // Apply edit (creative + user instruction)
   async function applyEdit() {
-    if (!lyric) return alert("Generate a rap first!");
+    if (!lyric) return alert("Generate something first!");
 
     const creative = creativeSettingsText();
 
     const finalInstruction =
       instruction.trim().length > 0
         ? `${instruction}\n\nCreative preferences:\n${creative}`
-        : `Apply creative preferences:\n${creative}`;
+        : `Apply these creative preferences:\n${creative}`;
 
     const res = await fetch("/api/edit", {
       method: "POST",
@@ -123,16 +126,32 @@ Complexity: ${
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex justify-center">
       <div className="max-w-3xl w-full">
-
         {/* Header */}
-        <h1 className="text-3xl font-semibold mb-2">Multilingual Rap Lab</h1>
+        <h1 className="text-3xl font-semibold mb-2">Multilingual Writing Lab</h1>
         <p className="text-sm text-zinc-400 mb-6">
-          Generate, romanise, and creatively edit rap lyrics.
+          Generate rap, poems, short stories and haikus. Then refine with creative controls.
         </p>
 
-        {/* Generate Section */}
-        <form onSubmit={generateRap} className="space-y-4 border border-zinc-800 p-4 rounded-lg mb-6">
-          <div className="grid md:grid-cols-3 gap-4">
+        {/* Generate Form */}
+        <form
+          onSubmit={generatePiece}
+          className="space-y-4 border border-zinc-800 p-4 rounded-lg mb-6"
+        >
+          <div className="grid md:grid-cols-4 gap-4">
+            {/* Form type */}
+            <div>
+              <label className="text-xs text-zinc-400 block mb-1">Form</label>
+              <select
+                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
+                value={form}
+                onChange={(e) => setForm(e.target.value as FormType)}
+              >
+                <option value="Rap">Rap</option>
+                <option value="Poem">Poem</option>
+                <option value="Short Story">Short Story</option>
+                <option value="Haiku">Haiku</option>
+              </select>
+            </div>
 
             {/* Language */}
             <div>
@@ -142,10 +161,18 @@ Complexity: ${
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
-                {["English","Hindi","Tamil","Spanish","French","Punjabi","Malay","Arabic"]
-                  .map((lang) => (
-                    <option key={lang}>{lang}</option>
-                  ))}
+                {[
+                  "English",
+                  "Hindi",
+                  "Tamil",
+                  "Spanish",
+                  "French",
+                  "Punjabi",
+                  "Malay",
+                  "Arabic",
+                ].map((lang) => (
+                  <option key={lang}>{lang}</option>
+                ))}
               </select>
             </div>
 
@@ -161,7 +188,7 @@ Complexity: ${
 
             {/* Style */}
             <div>
-              <label className="text-xs text-zinc-400 block mb-1">Style</label>
+              <label className="text-xs text-zinc-400 block mb-1">Style / Tone</label>
               <input
                 className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
                 value={style}
@@ -173,39 +200,63 @@ Complexity: ${
           <button
             type="submit"
             disabled={loading}
-            className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded text-sm hover:bg-white"
+            className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded text-sm hover:bg-white disabled:opacity-60"
           >
-            {loading ? "Generating..." : "Generate Rap"}
+            {loading ? "Generating..." : "Generate"}
           </button>
 
-          <a href="/library" className="ml-4 underline text-sm">View Saved Raps</a>
+          <a href="/library" className="ml-4 underline text-sm">
+            View Saved Pieces
+          </a>
         </form>
 
-        {/* CREATIVE TOOLBAR — Always Visible */}
+        {/* Creative Toolbar (always visible) */}
         <div className="border border-zinc-800 p-4 rounded-lg mb-6 space-y-6">
           <h2 className="text-lg font-semibold">Creative Controls</h2>
 
-          {/* Flow */}
           <div>
-            <label className="text-xs text-zinc-400 block mb-1">Flow (Smooth ↔ Choppy)</label>
-            <input type="range" min="0" max="100" value={flow} onChange={(e) => setFlow(Number(e.target.value))} />
+            <label className="text-xs text-zinc-400 block mb-1">
+              Flow (Smooth ↔ Choppy)
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={flow}
+              onChange={(e) => setFlow(Number(e.target.value))}
+            />
           </div>
 
-          {/* Tempo */}
           <div>
-            <label className="text-xs text-zinc-400 block mb-1">Tempo (Slow ↔ Fast)</label>
-            <input type="range" min="0" max="100" value={tempo} onChange={(e) => setTempo(Number(e.target.value))} />
+            <label className="text-xs text-zinc-400 block mb-1">
+              Tempo (Slow ↔ Fast)
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={tempo}
+              onChange={(e) => setTempo(Number(e.target.value))}
+            />
           </div>
 
-          {/* Emotion */}
           <div>
-            <label className="text-xs text-zinc-400 block mb-1">Emotion (Calm ↔ Aggressive)</label>
-            <input type="range" min="0" max="100" value={emotion} onChange={(e) => setEmotion(Number(e.target.value))} />
+            <label className="text-xs text-zinc-400 block mb-1">
+              Emotion (Calm ↔ Aggressive)
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={emotion}
+              onChange={(e) => setEmotion(Number(e.target.value))}
+            />
           </div>
 
-          {/* Complexity */}
           <div>
-            <label className="text-xs text-zinc-400 block mb-1">Complexity (Simple ↔ Lyrical)</label>
+            <label className="text-xs text-zinc-400 block mb-1">
+              Complexity (Simple ↔ Rich & Lyrical)
+            </label>
             <input
               type="range"
               min="0"
@@ -215,12 +266,13 @@ Complexity: ${
             />
           </div>
 
-          {/* Edit Instruction */}
           <div>
-            <label className="text-xs text-zinc-400 block mb-1">Edit Instruction</label>
+            <label className="text-xs text-zinc-400 block mb-1">
+              Edit Instruction
+            </label>
             <input
               className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
-              placeholder="e.g., Make rhyme scheme AABB, add punchlines..."
+              placeholder="e.g., Make it more atmospheric, add imagery, tighten ending..."
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
             />
@@ -234,20 +286,28 @@ Complexity: ${
           </div>
         </div>
 
-        {/* OUTPUT */}
+        {/* Output */}
         <div className="border border-zinc-800 p-4 rounded-lg">
           {!lyric ? (
-            <p className="text-sm text-zinc-500">Your rap will appear here after generation.</p>
+            <p className="text-sm text-zinc-500">
+              Your {form.toLowerCase()} will appear here after generation.
+            </p>
           ) : (
             <>
               <pre className="whitespace-pre-wrap font-mono text-sm">{lyric}</pre>
 
               <div className="flex gap-3 mt-4">
-                <button onClick={saveRap} className="bg-zinc-100 text-zinc-900 px-3 py-2 rounded text-sm">
+                <button
+                  onClick={savePiece}
+                  className="bg-zinc-100 text-zinc-900 px-3 py-2 rounded text-sm"
+                >
                   Save
                 </button>
 
-                <button onClick={romaniseRap} className="bg-zinc-800 text-zinc-100 px-3 py-2 rounded text-sm">
+                <button
+                  onClick={romaniseText}
+                  className="bg-zinc-800 text-zinc-100 px-3 py-2 rounded text-sm"
+                >
                   Romanise
                 </button>
               </div>
