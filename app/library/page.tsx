@@ -38,7 +38,7 @@ export default function LibraryPage() {
       </div>
 
       {ideas.length === 0 && (
-        <p className="text-zinc-500 text-sm">No raps saved yet.</p>
+        <p className="text-zinc-500 text-sm">No pieces saved yet.</p>
       )}
 
       <div className="grid gap-4">

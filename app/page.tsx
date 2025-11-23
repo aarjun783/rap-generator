@@ -106,10 +106,10 @@ export default function HomePage() {
     };
 
     const existing: WritingItem[] = JSON.parse(
-      localStorage.getItem("raps") || "[]"
+      localStorage.getItem("ideas") || "[]"
     );
     existing.push(newItem);
-    localStorage.setItem("raps", JSON.stringify(existing));
+    localStorage.setItem("ideas", JSON.stringify(existing));
 
     alert("Saved!");
   }

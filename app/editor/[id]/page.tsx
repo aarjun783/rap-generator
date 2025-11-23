@@ -19,8 +19,8 @@ export default function EditorPage() {
   const [idea, setIdea] = useState<Idea | null>(null);
 
   useEffect(() => {
-    const saved: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
-    const found = saved.find((r) => r.id === id) || null;
+    const saved: Idea[] = JSON.parse(localStorage.getItem("ideas") || "[]");
+    const found = saved.find((i) => i.id === id) || null;
     setIdea(found);
   }, [id]);
 
@@ -30,21 +30,21 @@ export default function EditorPage() {
     const updated: Idea = { ...idea, lyric: newText };
     setIdea(updated);
 
-    const all: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
-    const updatedList = all.map((r) => (r.id === id ? updated : r));
+    const all: Idea[] = JSON.parse(localStorage.getItem("ideas") || "[]");
+    const updatedList = all.map((i) => (i.id === id ? updated : i));
     localStorage.setItem("raps", JSON.stringify(updatedList));
   }
 
-  function deleteRap() {
-    const all: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
-    const updated = all.filter((r) => r.id !== id);
+  function deleteIdea() {
+    const all: Idea[] = JSON.parse(localStorage.getItem("ideas") || "[]");
+    const updated = all.filter((i) => i.id !== id);
     localStorage.setItem("raps", JSON.stringify(updated));
 
     window.location.href = "/library";
   }
 
   if (!idea) {
-    return <div className="p-6 text-zinc-100">Rap not found.</div>;
+    return <div className="p-6 text-zinc-100">Idea not found.</div>;
   }
 
   return (
@@ -53,7 +53,7 @@ export default function EditorPage() {
         <h1 className="text-2xl">{idea.title}</h1>
 
         <button
-          onClick={deleteRap}
+          onClick={deleteIdea}
           className="bg-red-600 px-3 py-1 rounded text-sm"
         >
           Delete
