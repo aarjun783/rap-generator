@@ -28,8 +28,7 @@ type FormType = "Rap" | "Poem" | "Short Story";
 export default function HomePage() {
   const [form, setForm] = useState<FormType>("Rap");
   const [language, setLanguage] = useState("English");
-  const [theme, setTheme] = useState("Hustle and ambition");
-  const [style, setStyle] = useState("Old-school boom bap");
+  const [prompter, setPrompter] = useState("Hustle and ambition");
   const [lyric, setLyric] = useState("");
 
   const [instruction, setInstruction] = useState("");
@@ -80,7 +79,7 @@ export default function HomePage() {
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ language, theme, style, form }),
+      body: JSON.stringify({ language, prompter, form }),
     });
 
     const data = await res.json();
@@ -207,21 +206,11 @@ export default function HomePage() {
 
             {/* THEME */}
             <div>
-              <label className="text-xs text-zinc-400">Theme</label>
+              <label className="text-xs text-zinc-400">Prompt</label>
               <input
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
-              />
-            </div>
-
-            {/* STYLE */}
-            <div>
-              <label className="text-xs text-zinc-400">Style / Tone</label>
-              <input
-                value={style}
-                onChange={(e) => setStyle(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
+                value={prompter}
+                onChange={(e) => setPrompter(e.target.value)}
+                className="w-full md:w-[350px] bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
               />
             </div>
           </div>
