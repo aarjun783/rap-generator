@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Rap = {
+type Idea = {
   id: string;
   title: string;
   lyric: string;
@@ -16,10 +16,10 @@ export default function EditorPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [rap, setRap] = useState<Rap | null>(null);
+  const [rap, setRap] = useState<Idea | null>(null);
 
   useEffect(() => {
-    const saved: Rap[] = JSON.parse(localStorage.getItem("raps") || "[]");
+    const saved: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
     const found = saved.find((r) => r.id === id) || null;
     setRap(found);
   }, [id]);
@@ -27,16 +27,16 @@ export default function EditorPage() {
   function updateLyric(newText: string) {
     if (!rap) return;
 
-    const updated: Rap = { ...rap, lyric: newText };
+    const updated: Idea = { ...rap, lyric: newText };
     setRap(updated);
 
-    const all: Rap[] = JSON.parse(localStorage.getItem("raps") || "[]");
+    const all: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
     const updatedList = all.map((r) => (r.id === id ? updated : r));
     localStorage.setItem("raps", JSON.stringify(updatedList));
   }
 
   function deleteRap() {
-    const all: Rap[] = JSON.parse(localStorage.getItem("raps") || "[]");
+    const all: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
     const updated = all.filter((r) => r.id !== id);
     localStorage.setItem("raps", JSON.stringify(updated));
 
