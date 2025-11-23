@@ -2,11 +2,24 @@
 
 import { useState } from "react";
 
-type Rap = {
+import {
+  CreativeRapControls,
+  CreativePoemControls,
+  CreativeStoryControls,
+  summarizeRapSettings,
+  summarizePoemSettings,
+  summarizeStorySettings,
+  RapSettings,
+  PoemSettings,
+  StorySettings
+} from "@/app/components/creative";
+
+type WritingItem = {
   id: string;
   title: string;
   lyric: string;
   language: string;
+  form: string;
   createdAt: number;
 };
 
@@ -14,38 +27,51 @@ type FormType = "Rap" | "Poem" | "Short Story" | "Haiku";
 
 export default function HomePage() {
   const [form, setForm] = useState<FormType>("Rap");
-  const [language, setLanguage] = useState<string>("English");
-  const [theme, setTheme] = useState<string>("Hustle and ambition");
-  const [style, setStyle] = useState<string>("Old-school boom bap");
-  const [lyric, setLyric] = useState<string>("");
+  const [language, setLanguage] = useState("English");
+  const [theme, setTheme] = useState("Hustle and ambition");
+  const [style, setStyle] = useState("Old-school boom bap");
+  const [lyric, setLyric] = useState("");
 
-  const [instruction, setInstruction] = useState<string>("");
+  const [instruction, setInstruction] = useState("");
 
-  // creative sliders
-  const [flow, setFlow] = useState<number>(50);
-  const [tempo, setTempo] = useState<number>(50);
-  const [emotion, setEmotion] = useState<number>(50);
-  const [complexity, setComplexity] = useState<number>(50);
+  // --- mode-specific creative settings ---
+  const [rapSettings, setRapSettings] = useState<RapSettings>({
+    flow: 50,
+    tempo: 50,
+    emotion: 50,
+    complexity: 50,
+  });
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [poemSettings, setPoemSettings] = useState<PoemSettings>({
+    imagery: 50,
+    emotion: 50,
+    rhythm: 50,
+    metaphorDensity: 50,
+  });
 
-  function creativeSettingsText() {
-    return `
-Form: ${form}
-Flow: ${flow < 40 ? "choppy" : flow > 60 ? "smooth" : "balanced"}
-Tempo: ${tempo < 40 ? "slow" : tempo > 60 ? "fast" : "medium"}
-Emotion: ${emotion < 40 ? "calm" : emotion > 60 ? "aggressive" : "neutral"}
-Complexity: ${
-      complexity < 40
-        ? "simple language"
-        : complexity > 60
-        ? "rich, layered language"
-        : "medium complexity"
+  const [storySettings, setStorySettings] = useState<StorySettings>({
+    pacing: 50,
+    tension: 50,
+    detail: 50,
+    dialogue: 50,
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  function buildCreativeSummary() {
+    switch (form) {
+      case "Rap":
+        return summarizeRapSettings(rapSettings);
+      case "Poem":
+        return summarizePoemSettings(poemSettings);
+      case "Short Story":
+        return summarizeStorySettings(storySettings);
+      default:
+        return "";
     }
-`;
   }
 
-  // Generate piece
+  // --- generate new piece ---
   async function generatePiece(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -62,29 +88,32 @@ Complexity: ${
     setLoading(false);
   }
 
-  // Save locally
+  // --- save piece ---
   function savePiece() {
     if (!lyric) return alert("Generate something first!");
 
     const title = prompt("Enter a title:");
     if (!title) return;
 
-    const newItem: Rap = {
+    const newItem: WritingItem = {
       id: crypto.randomUUID(),
       title,
       lyric,
       language,
+      form,
       createdAt: Date.now(),
     };
 
-    const existing: Rap[] = JSON.parse(localStorage.getItem("raps") || "[]");
+    const existing: WritingItem[] = JSON.parse(
+      localStorage.getItem("raps") || "[]"
+    );
     existing.push(newItem);
     localStorage.setItem("raps", JSON.stringify(existing));
 
     alert("Saved!");
   }
 
-  // Romanise (still works generically)
+  // --- romanise ---
   async function romaniseText() {
     if (!lyric) return;
 
@@ -98,11 +127,11 @@ Complexity: ${
     if (data.romanised) setLyric(data.romanised);
   }
 
-  // Apply edit (creative + user instruction)
+  // --- apply creative edit ---
   async function applyEdit() {
     if (!lyric) return alert("Generate something first!");
 
-    const creative = creativeSettingsText();
+    const creative = buildCreativeSummary();
 
     const finalInstruction =
       instruction.trim().length > 0
@@ -116,6 +145,7 @@ Complexity: ${
         lyric,
         instruction: finalInstruction,
         language,
+        form,
       }),
     });
 
@@ -126,40 +156,40 @@ Complexity: ${
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex justify-center">
       <div className="max-w-3xl w-full">
-        {/* Header */}
         <h1 className="text-3xl font-semibold mb-2">Multilingual Writing Lab</h1>
         <p className="text-sm text-zinc-400 mb-6">
-          Generate rap, poems, short stories and haikus. Then refine with creative controls.
+          Generate rap, poems, and short stories — then reshape them with
+          creative controls.
         </p>
 
-        {/* Generate Form */}
+        {/* GENERATE FORM */}
         <form
           onSubmit={generatePiece}
           className="space-y-4 border border-zinc-800 p-4 rounded-lg mb-6"
         >
           <div className="grid md:grid-cols-4 gap-4">
-            {/* Form type */}
+            {/* FORM SELECT */}
             <div>
-              <label className="text-xs text-zinc-400 block mb-1">Form</label>
+              <label className="text-xs text-zinc-400">Form</label>
               <select
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
                 value={form}
                 onChange={(e) => setForm(e.target.value as FormType)}
+                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
               >
-                <option value="Rap">Rap</option>
-                <option value="Poem">Poem</option>
-                <option value="Short Story">Short Story</option>
-                <option value="Haiku">Haiku</option>
+                <option>Rap</option>
+                <option>Poem</option>
+                <option>Short Story</option>
+                <option>Haiku</option>
               </select>
             </div>
 
-            {/* Language */}
+            {/* LANGUAGE */}
             <div>
-              <label className="text-xs text-zinc-400 block mb-1">Language</label>
+              <label className="text-xs text-zinc-400">Language</label>
               <select
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
               >
                 {[
                   "English",
@@ -170,29 +200,29 @@ Complexity: ${
                   "Punjabi",
                   "Malay",
                   "Arabic",
-                ].map((lang) => (
-                  <option key={lang}>{lang}</option>
+                ].map((l) => (
+                  <option key={l}>{l}</option>
                 ))}
               </select>
             </div>
 
-            {/* Theme */}
+            {/* THEME */}
             <div>
-              <label className="text-xs text-zinc-400 block mb-1">Theme</label>
+              <label className="text-xs text-zinc-400">Theme</label>
               <input
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
               />
             </div>
 
-            {/* Style */}
+            {/* STYLE */}
             <div>
-              <label className="text-xs text-zinc-400 block mb-1">Style / Tone</label>
+              <label className="text-xs text-zinc-400">Style / Tone</label>
               <input
-                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
                 value={style}
                 onChange={(e) => setStyle(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
               />
             </div>
           </div>
@@ -200,81 +230,54 @@ Complexity: ${
           <button
             type="submit"
             disabled={loading}
-            className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded text-sm hover:bg-white disabled:opacity-60"
+            className="bg-zinc-100 text-zinc-900 px-4 py-2 rounded text-sm hover:bg-white disabled:opacity-50"
           >
             {loading ? "Generating..." : "Generate"}
           </button>
 
           <a href="/library" className="ml-4 underline text-sm">
-            View Saved Pieces
+            View Saved Items
           </a>
         </form>
 
-        {/* Creative Toolbar (always visible) */}
+        {/* CREATIVE CONTROLS */}
         <div className="border border-zinc-800 p-4 rounded-lg mb-6 space-y-6">
-          <h2 className="text-lg font-semibold">Creative Controls</h2>
+          <h2 className="text-xl font-semibold">Creative Controls</h2>
+          <p className="text-xs text-zinc-500 mb-4">
+            Adjust stylistic elements depending on the writing form.
+          </p>
 
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">
-              Flow (Smooth ↔ Choppy)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={flow}
-              onChange={(e) => setFlow(Number(e.target.value))}
+          {form === "Rap" && (
+            <CreativeRapControls
+              settings={rapSettings}
+              setSettings={setRapSettings}
             />
-          </div>
+          )}
 
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">
-              Tempo (Slow ↔ Fast)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={tempo}
-              onChange={(e) => setTempo(Number(e.target.value))}
+          {form === "Poem" && (
+            <CreativePoemControls
+              settings={poemSettings}
+              setSettings={setPoemSettings}
             />
-          </div>
+          )}
 
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">
-              Emotion (Calm ↔ Aggressive)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={emotion}
-              onChange={(e) => setEmotion(Number(e.target.value))}
+          {form === "Short Story" && (
+            <CreativeStoryControls
+              settings={storySettings}
+              setSettings={setStorySettings}
             />
-          </div>
+          )}
 
-          <div>
+          {/* EDIT INSTRUCTION */}
+          <div className="pt-4">
             <label className="text-xs text-zinc-400 block mb-1">
-              Complexity (Simple ↔ Rich & Lyrical)
+              Edit Instruction (optional)
             </label>
             <input
-              type="range"
-              min="0"
-              max="100"
-              value={complexity}
-              onChange={(e) => setComplexity(Number(e.target.value))}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">
-              Edit Instruction
-            </label>
-            <input
-              className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
-              placeholder="e.g., Make it more atmospheric, add imagery, tighten ending..."
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
+              placeholder="e.g., Add tension, increase imagery, make rhyme tighter..."
+              className="w-full bg-zinc-900 border border-zinc-800 p-2 rounded text-sm"
             />
 
             <button
@@ -286,7 +289,7 @@ Complexity: ${
           </div>
         </div>
 
-        {/* Output */}
+        {/* OUTPUT */}
         <div className="border border-zinc-800 p-4 rounded-lg">
           {!lyric ? (
             <p className="text-sm text-zinc-500">
@@ -294,16 +297,17 @@ Complexity: ${
             </p>
           ) : (
             <>
-              <pre className="whitespace-pre-wrap font-mono text-sm">{lyric}</pre>
+              <pre className="whitespace-pre-wrap font-mono text-sm mb-4">
+                {lyric}
+              </pre>
 
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3">
                 <button
                   onClick={savePiece}
                   className="bg-zinc-100 text-zinc-900 px-3 py-2 rounded text-sm"
                 >
                   Save
                 </button>
-
                 <button
                   onClick={romaniseText}
                   className="bg-zinc-800 text-zinc-100 px-3 py-2 rounded text-sm"
