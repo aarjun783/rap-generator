@@ -16,19 +16,19 @@ export default function EditorPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [rap, setRap] = useState<Idea | null>(null);
+  const [idea, setIdea] = useState<Idea | null>(null);
 
   useEffect(() => {
     const saved: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
     const found = saved.find((r) => r.id === id) || null;
-    setRap(found);
+    setIdea(found);
   }, [id]);
 
   function updateLyric(newText: string) {
-    if (!rap) return;
+    if (!idea) return;
 
-    const updated: Idea = { ...rap, lyric: newText };
-    setRap(updated);
+    const updated: Idea = { ...idea, lyric: newText };
+    setIdea(updated);
 
     const all: Idea[] = JSON.parse(localStorage.getItem("raps") || "[]");
     const updatedList = all.map((r) => (r.id === id ? updated : r));
@@ -43,14 +43,14 @@ export default function EditorPage() {
     window.location.href = "/library";
   }
 
-  if (!rap) {
+  if (!idea) {
     return <div className="p-6 text-zinc-100">Rap not found.</div>;
   }
 
   return (
     <div className="p-6 bg-zinc-950 min-h-screen text-zinc-100">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl">{rap.title}</h1>
+        <h1 className="text-2xl">{idea.title}</h1>
 
         <button
           onClick={deleteRap}
@@ -62,7 +62,7 @@ export default function EditorPage() {
 
       <textarea
         className="w-full h-[500px] bg-zinc-900 border border-zinc-800 p-3 rounded font-mono mt-4"
-        value={rap.lyric}
+        value={idea.lyric}
         onChange={(e) => updateLyric(e.target.value)}
       />
 
