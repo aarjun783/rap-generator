@@ -23,7 +23,7 @@ type WritingItem = {
   createdAt: number;
 };
 
-type FormType = "Rap" | "Poem" | "Short Story" | "Haiku";
+type FormType = "Rap" | "Poem" | "Short Story";
 
 export default function HomePage() {
   const [form, setForm] = useState<FormType>("Rap");
@@ -179,7 +179,6 @@ export default function HomePage() {
                 <option>Rap</option>
                 <option>Poem</option>
                 <option>Short Story</option>
-                <option>Haiku</option>
               </select>
             </div>
 
