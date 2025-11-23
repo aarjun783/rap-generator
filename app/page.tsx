@@ -76,10 +76,12 @@ export default function HomePage() {
     setLoading(true);
     setLyric("");
 
+    const creativeSummary = buildCreativeSummary();
+
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ language, prompter, form }),
+      body: JSON.stringify({ language, prompter, form,creativeSummary }),
     });
 
     const data = await res.json();

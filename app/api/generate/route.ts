@@ -9,12 +9,13 @@ const groq = new Groq({
 
 type FormType = "Rap" | "Poem" | "Short Story";
 
-function buildPrompt(form: FormType, language: string, prompter: string) {
+function buildPrompt(form: FormType, language: string, prompter: string, creative: string) {
   switch (form) {
     case "Poem":
       return `
 You are a multilingual poet. Write a poem in ${language}.
-Prompt: ${prompter}
+Prompt: ${prompter}.
+Creative Preferences: ${creative}.
 Length: 12–24 lines.
 Focus on imagery, emotion and rhythm.
 Output only the poem.
@@ -23,7 +24,8 @@ Output only the poem.
     case "Short Story":
       return `
 You are a multilingual fiction writer. Write a short story in ${language}.
-Prompt: ${prompter}
+Prompt: ${prompter}.
+Creative Preferences: ${creative}.
 Length: about 400–800 words.
 Use clear narrative structure (beginning, middle, end) with character and setting.
 Output only the story.
@@ -33,7 +35,8 @@ Output only the story.
     default:
       return `
 You are a multilingual rap songwriter. Write a rap verse in ${language}.
-Prompt: ${prompter}
+Prompt: ${prompter}.
+Creative Preferences: ${creative}.
 Length: 16–24 bars.
 Focus on rhyme, flow, rhythm and punchlines.
 Output only the lyrics.
@@ -43,11 +46,11 @@ Output only the lyrics.
 
 export async function POST(req: Request) {
   try {
-    const { language, prompter, form } = await req.json();
+    const { language, prompter, creativeSummary, form } = await req.json();
 
     const formType: FormType = form || "Rap";
 
-    const prompt = buildPrompt(formType, language, prompter);
+    const prompt = buildPrompt(formType, language, prompter,creativeSummary);
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant", // or your existing model
