@@ -32,13 +32,13 @@ export default function EditorPage() {
 
     const all: Idea[] = JSON.parse(localStorage.getItem("ideas") || "[]");
     const updatedList = all.map((i) => (i.id === id ? updated : i));
-    localStorage.setItem("raps", JSON.stringify(updatedList));
+    localStorage.setItem("ideas", JSON.stringify(updatedList));
   }
 
   function deleteIdea() {
     const all: Idea[] = JSON.parse(localStorage.getItem("ideas") || "[]");
     const updated = all.filter((i) => i.id !== id);
-    localStorage.setItem("raps", JSON.stringify(updated));
+    localStorage.setItem("ideas", JSON.stringify(updated));
 
     window.location.href = "/library";
   }
